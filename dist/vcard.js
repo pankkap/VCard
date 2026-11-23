@@ -14,8 +14,7 @@ function vEsc(value) {
     .replace(/,/g, '\\,');
 }
 
-/* RFC 2426 line folding: max 75 octets per line, continuation = CRLF + space.
-   Breaks are preferred at spaces so the unfolded text still reads naturally. */
+/* RFC 2426 line folding: max 75 octets per line, continuation = CRLF + space */
 function vFold(line, limit = 74) {
   const enc = new TextEncoder();
   const bytes = (s) => enc.encode(s).length;

@@ -2,7 +2,7 @@
   "name": "digital-business-card",
   "version": "1.0.0",
   "private": true,
-  "description": "QR code business card: a mobile landing page with save-to-contacts (vCard), a browser editor, and generated QR codes.",
+  "description": "QR code business card: a mobile landing page with save-to-contacts (vCard), a browser editor, and generated QR codes. Deployed at vcard.beta-labs.in",
   "type": "module",
   "scripts": {
     "start": "node edit.mjs",
@@ -11,5 +11,9 @@
   },
   "dependencies": {
     "qrcode": "^1.5.4"
-  }
+  },
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

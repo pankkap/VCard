@@ -2,10 +2,10 @@
 /**
  * Build helper for the digital business card.
  *
- *   node build.mjs --url https://your-card.netlify.app
+ *   node build.mjs --url https://vcard.beta-labs.in
  *
  * What it does:
- *   1. Reads your details from the card-config block in index.html
+ *   1. Reads the card details from the <script id="card-config"> block in index.html
  *   2. Writes card.vcf          (the file both iPhone and Android import)
  *   3. Writes qr.png / qr.svg   (a QR code pointing at your hosted card)
  *   4. Writes qr-url.txt        (reminder of the URL baked into the QR)
@@ -13,12 +13,15 @@
  *
  * Add --vcard to also emit qr-direct.png, a QR that carries the whole
  * contact inside it (no website needed — good offline fallback).
- *
- * Prefer the browser editor for day-to-day edits:  npm start
  */
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import QRCode from 'qrcode';
-import { readCard, writeVcf, writeQr, readSiteUrl, buildDist, p } from './config.mjs';
+
+const root = path.dirname(fileURLToPath(import.meta.url));
+const p = (...f) => path.join(root, ...f);
 
 function arg(name, fallback = null) {
   const i = process.argv.indexOf(`--${name}`);
@@ -29,33 +32,46 @@ function arg(name, fallback = null) {
 
 const hasFlag = (name) => process.argv.includes(`--${name}`);
 
-const card = await readCard();
-const name = [card.firstName, card.lastName].filter(Boolean).join(' ');
+/* ---- 1. read config out of index.html ---- */
+const html = await fs.readFile(p('index.html'), 'utf8');
+const match = html.match(/<script id="card-config" type="application\/json">([\s\S]*?)<\/script>/);
+if (!match) {
+  console.error('✖ Could not find <script id="card-config"> in index.html');
+  process.exit(1);
+}
+const card = JSON.parse(match[1]);
 
-const vcf = await writeVcf(card);
-console.log(`✓ card.vcf  (${Buffer.byteLength(vcf)} bytes) for ${name}`);
+/* ---- 2. shared vCard builder (same code the page runs) ---- */
+const vcardSrc = await fs.readFile(p('vcard.js'), 'utf8');
+const { buildVCard } = new Function(vcardSrc + '\nreturn { buildVCard };')();
 
-/* ---- QR code ---- */
-const url = arg('url') || (await readSiteUrl());
-if (!url) {
-  console.warn('⚠ No card link yet, so no QR was generated.');
-  console.warn('  Run: node build.mjs --url https://your-card.netlify.app\n');
-} else {
-  try {
-    const parsed = new URL(url);
-    if (!/^https?:$/.test(parsed.protocol)) throw new Error();
-  } catch {
-    console.error(`✖ "${url}" is not a valid http(s) URL.`);
-    process.exit(1);
-  }
-  await writeQr(url);
-  console.log(`✓ qr.png + qr.svg → ${url}`);
+const vcf = buildVCard(card);
+await fs.writeFile(p('card.vcf'), vcf, 'utf8');
+
+/* ---- 3. QR code ---- */
+const url = arg('url') || 'https://vcard.beta-labs.in';
+try {
+  new URL(url);
+} catch {
+  console.error(`✖ "${url}" is not a valid URL.`);
+  process.exit(1);
 }
 
-/* ---- optional: contact data straight inside the QR ---- */
+const qrOptions = {
+  errorCorrectionLevel: 'M',
+  margin: 4,
+  width: 1024,
+  color: { dark: '#0b1b1f', light: '#ffffff' },
+};
+
+await QRCode.toFile(p('qr.png'), url, qrOptions);
+await fs.writeFile(p('qr.svg'), await QRCode.toString(url, { ...qrOptions, type: 'svg' }), 'utf8');
+await fs.writeFile(p('qr-url.txt'), url + '\n', 'utf8');
+
+/* ---- 4. optional: contact data straight inside the QR ---- */
 if (hasFlag('vcard')) {
-  await QRCode.toFile(p('qr-direct.png'), vcf, {
-    errorCorrectionLevel: 'L', // vCards are big; low EC keeps the QR scannable
+  await QRCode.toFile(p('qr-direct.png'), vcf.replace(/\r\n/g, '\n'), {
+    errorCorrectionLevel: 'L',
     margin: 4,
     width: 1024,
     color: { dark: '#0b1b1f', light: '#ffffff' },
@@ -63,5 +79,17 @@ if (hasFlag('vcard')) {
   console.log('✓ qr-direct.png (contact data inside the QR — no hosting needed)');
 }
 
-const files = await buildDist();
-console.log(`✓ dist/ (${files.length} files) ← drag onto https://app.netlify.com/drop`);
+/* ---- report ---- */
+const name = [card.firstName, card.lastName].filter(Boolean).join(' ');
+console.log(`✓ card.vcf  (${Buffer.byteLength(vcf)} bytes) for ${name}`);
+console.log(`✓ qr.png + qr.svg → ${url}`);
+
+const dist = p('dist');
+await fs.rm(dist, { recursive: true, force: true });
+await fs.mkdir(dist, { recursive: true });
+
+const deployFiles = ['index.html', 'vcard.js', 'card.vcf', '_headers', 'qr.png', 'qr.svg'];
+for (const file of deployFiles) {
+  try { await fs.copyFile(p(file), path.join(dist, file)); } catch {}
+}
+console.log(`✓ dist/  ← drag this folder onto https://app.netlify.com/drop`);

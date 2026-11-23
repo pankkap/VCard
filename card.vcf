@@ -1,19 +1,19 @@
 BEGIN:VCARD
 VERSION:3.0
 PRODID:-//Digital Business Card//EN
-N:Kapoor;Pankaj;;;
-FN:Pankaj Kapoor
-ORG:Beta Labs
-TITLE:Founder
-TEL;TYPE=CELL,VOICE:+919729280731
-EMAIL;TYPE=INTERNET,WORK:info@beta-labs.in
-URL:www.beta-labs.in
-NOTE:Beta-Labs is an AI-driven technology and innovation company focused 
- on building intelligent software solutions\, automation platforms\, and 
- digital products.
-X-SOCIALPROFILE;TYPE=linkedin:https://www.linkedin.com/company/beta-labs-i
- n/
+N:Morgan;Alex;;;
+FN:Alex Morgan
+ORG:Northwind Studio
+TITLE:Founder & Product Designer
+TEL;TYPE=CELL,VOICE:+15551234567
+EMAIL;TYPE=INTERNET,WORK:alex@northwind.studio
+URL:https://vcard.beta-labs.in
+ADR;TYPE=WORK:;;12 Harbour Lane;San Francisco;CA;94103;United States
+NOTE:I help small teams turn fuzzy ideas into calm\, useful products. 
+ Fifteen years of design\, research and front-end craft — usually over a 
+ very good coffee.
+X-SOCIALPROFILE;TYPE=linkedin:https://www.linkedin.com/in/example
 X-SOCIALPROFILE;TYPE=x:https://x.com/example
 X-SOCIALPROFILE;TYPE=instagram:https://instagram.com/example
-REV:2026-11-23T07:46:39Z
+REV:2026-11-23T08:11:11Z
 END:VCARD
