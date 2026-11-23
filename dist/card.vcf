@@ -1,0 +1,19 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Digital Business Card//EN
+N:Kapoor;Pankaj;;;
+FN:Pankaj Kapoor
+ORG:Beta Labs
+TITLE:Founder
+TEL;TYPE=CELL,VOICE:+919729280731
+EMAIL;TYPE=INTERNET,WORK:info@beta-labs.in
+URL:www.beta-labs.in
+NOTE:Beta-Labs is an AI-driven technology and innovation company focused 
+ on building intelligent software solutions\, automation platforms\, and 
+ digital products.
+X-SOCIALPROFILE;TYPE=linkedin:https://www.linkedin.com/company/beta-labs-i
+ n/
+X-SOCIALPROFILE;TYPE=x:https://x.com/example
+X-SOCIALPROFILE;TYPE=instagram:https://instagram.com/example
+REV:2026-11-23T07:46:39Z
+END:VCARD

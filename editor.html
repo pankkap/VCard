@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card editor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230d9c9c'/%3E%3Cpath d='M30 62l12-24 12 24M34 55h16M60 62V38h7a7 7 0 0 1 0 14h-7' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #0b1b1f;
+    --ink-soft: #3d5358;
+    --muted: #6b8288;
+    --teal: #0d9c9c;
+    --teal-dark: #07787a;
+    --line: #e3ebec;
+    --chip: #f3f8f8;
+    --danger: #b4453c;
+  }
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #f4f9f9;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, .88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.2px; }
+  .brand svg { color: var(--teal); }
+
+  .topbar .spacer { flex: 1 1 auto; }
+
+  .status {
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .status .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #c3d2d3;
+    transition: background .2s ease;
+  }
+  .status.dirty .dot { background: #e0a02a; }
+  .status.saved .dot { background: #2f9e6b; }
+
+  /* ---------- layout ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 376px;
+    gap: 22px;
+    align-items: start;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 24px 64px;
+  }
+
+  .panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 20px;
+  }
+  .panel + .panel { margin-top: 16px; }
+
+  .panel h2 {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .9px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel p.sub {
+    margin: 0 0 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+
+  label.field { display: block; margin-bottom: 12px; }
+  label.field > span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d9e4e5;
+    border-radius: 11px;
+    background: #fbfdfd;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  input::placeholder, textarea::placeholder { color: #a8bbbe; }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--teal);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(13, 156, 156, .16);
+  }
+  textarea { min-height: 108px; resize: vertical; line-height: 1.5; }
+
+  .counter { text-align: right; font-size: 11.5px; color: var(--muted); margin-top: 5px; }
+
+  /* ---------- socials ---------- */
+  .social-row { display: grid; grid-template-columns: 132px 1fr 38px; gap: 8px; margin-bottom: 8px; }
+
+  .icon-btn {
+    height: 42px;
+    border: 1px solid #d9e4e5;
+    border-radius: 11px;
+    background: #fff;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .icon-btn:hover { color: var(--danger); border-color: #e8c7c3; background: #fdf6f5; }
+
+  .link-btn {
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    color: var(--teal-dark);
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .link-btn:hover { text-decoration: underline; }
+  .link-btn:disabled { color: #b6c6c8; cursor: not-allowed; text-decoration: none; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--ink);
+    color: #fff;
+    font: inherit;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+    transition: filter .15s ease, transform .12s ease;
+  }
+  .btn:active { transform: scale(.985); }
+  .btn-primary { background: linear-gradient(135deg, #12b0ac 0%, var(--teal-dark) 100%); box-shadow: 0 8px 18px -9px rgba(7,120,122,.9); }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { background: #eef5f5; color: var(--ink-soft); }
+  .btn-ghost:hover { background: #e4eeee; }
+  .btn[disabled] { opacity: .55; cursor: not-allowed; }
+
+  /* ---------- side column ---------- */
+  .side { position: sticky; top: 76px; display: grid; gap: 16px; }
+
+  .phone {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    height: 620px;
+    padding: 9px;
+    border-radius: 38px;
+    background: #0b1b1f;
+    box-shadow: 0 24px 50px -24px rgba(8,60,60,.55);
+  }
+  .phone iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 30px;
+    background: #fff;
+    display: block;
+  }
+
+  .qr-panel { text-align: center; }
+  .qr-frame {
+    display: inline-flex;
+    padding: 10px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+  .qr-frame img { width: 168px; height: 168px; display: block; image-rendering: pixelated; }
+  .qr-frame img[data-empty="1"] { opacity: .18; }
+
+  .qr-panel .field { text-align: left; margin: 14px 0 0; }
+  .qr-actions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .qr-actions .btn { min-height: 38px; padding: 0 14px; font-size: 13px; }
+
+  .note {
+    margin: 10px 0 0;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--muted);
+    text-align: center;
+  }
+  .note.warn { color: #a06a12; }
+
+  .banner {
+    display: none;
+    margin: 18px auto 0;
+    max-width: 720px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #fdf0ee;
+    border: 1px solid #eec7c1;
+    color: #7d2b24;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .banner strong { font-weight: 700; }
+  .banner code { background: rgba(0, 0, 0, .07); padding: 1px 5px; border-radius: 5px; }
+  .banner-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(125, 43, 36, .14);
+    font-size: 11.5px;
+    color: #a2706a;
+    word-break: break-all;
+  }
+  .banner-foot .link-btn { color: #7d2b24; font-weight: 700; white-space: nowrap; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translate(-50%, 14px);
+    padding: 11px 16px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: #eaf6f5;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 20;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.error { background: #7d2b24; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; padding: 16px 14px 64px; }
+    .side { position: static; }
+    .phone { max-width: 280px; height: 540px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 10h8M8 14h5"/>
+    </svg>
+    Card editor
+  </div>
+  <div class="spacer"></div>
+  <a class="link-btn" href="/index.html" target="_blank" rel="noopener">Open card ↗</a>
+  <span class="status" id="status"><span class="dot"></span><span id="statusText">Loading…</span></span>
+  <button class="btn btn-primary" id="saveBtn" type="button" disabled title="Connecting to the editor server…">Save changes</button>
+</header>
+
+<div class="banner" id="banner">
+  <div>
+    <strong>Editor server offline.</strong>
+    <span id="bannerText">Start it with <code>npm start</code> in this folder — this page reconnects by itself, and anything you have typed stays put.</span>
+  </div>
+  <div class="banner-foot">
+    <span id="bannerHint"></span>
+    <button class="link-btn" id="retryBtn" type="button">Retry now</button>
+  </div>
+</div>
+
+<main class="layout">
+  <section>
+    <div class="panel">
+      <h2>Identity</h2>
+      <p class="sub">Shown at the top of the card and used for the contact name.</p>
+      <div class="grid2">
+        <label class="field"><span>First name</span><input id="firstName" autocomplete="given-name"></label>
+        <label class="field"><span>Last name</span><input id="lastName" autocomplete="family-name"></label>
+        <label class="field"><span>Job title</span><input id="jobTitle" placeholder="Founder &amp; Product Designer"></label>
+        <label class="field"><span>Company</span><input id="company" autocomplete="organization"></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Contact</h2>
+      <p class="sub">These become tappable rows on the card and fields in the contact.</p>
+      <div class="grid2">
+        <label class="field"><span>Phone</span><input id="phone" type="tel" placeholder="+1 555 123 4567" autocomplete="tel"></label>
+        <label class="field"><span>Email</span><input id="email" type="email" placeholder="you@company.com" autocomplete="email"></label>
+      </div>
+      <label class="field"><span>Website</span><input id="website" placeholder="https://your-site.com" autocomplete="url"></label>
+    </div>
+
+    <div class="panel">
+      <h2>Address</h2>
+      <div class="grid2">
+        <label class="field" style="grid-column: 1 / -1"><span>Street</span><input id="street"></label>
+        <label class="field"><span>City</span><input id="city"></label>
+        <label class="field"><span>State / region</span><input id="state"></label>
+        <label class="field"><span>Postal code</span><input id="zip"></label>
+        <label class="field"><span>Country</span><input id="country"></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>About</h2>
+      <label class="field">
+        <span>Summary</span>
+        <textarea id="summary" maxlength="250" placeholder="One or two lines about what you do."></textarea>
+        <div class="counter"><span id="count">0</span>/250</div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span>Photo URL (optional)</span>
+        <input id="photo" placeholder="photo.jpg or https://…/me.jpg">
+      </label>
+    </div>
+
+    <div class="panel">
+      <h2>Social links</h2>
+      <p class="sub">Icons appear at the bottom of the card and are saved in the contact.</p>
+      <div id="socials"></div>
+      <button class="link-btn" id="addSocial" type="button">+ Add a link</button>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="phone">
+      <iframe id="preview" src="/index.html" title="Card preview"></iframe>
+    </div>
+
+    <div class="panel qr-panel">
+      <h2>QR code</h2>
+      <div class="qr-frame"><img id="qrImg" alt="QR code preview" data-empty="1"></div>
+      <div class="qr-actions">
+        <a class="btn btn-primary" id="qrPng" href="#" download="card-qr.png">Download PNG</a>
+        <a class="btn btn-ghost" id="qrSvg" href="#" download="card-qr.svg">SVG</a>
+      </div>
+      <label class="field">
+        <span>Card link (where the QR points)</span>
+        <input id="siteUrl" placeholder="https://your-card.netlify.app" inputmode="url" autocomplete="url">
+      </label>
+      <p class="note" id="qrNote">Publish the <code>dist</code> folder to Netlify, then paste that link here.</p>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var FIELDS = ['firstName', 'lastName', 'jobTitle', 'company', 'phone', 'email', 'website',
+                'street', 'city', 'state', 'zip', 'country', 'summary', 'photo'];
+  var SOCIAL_TYPES = ['linkedin', 'x', 'instagram', 'facebook', 'youtube', 'tiktok', 'github', 'telegram', 'website'];
+
+  var dirty = false;
+  var savedSite = '';
+
+  /* ---------- helpers ---------- */
+  function setStatus(text, kind) {
+    $('statusText').textContent = text;
+    $('status').className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  function toast(message, isError) {
+    var el = $('toast');
+    el.textContent = message;
+    el.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.className = 'toast'; }, 3800);
+  }
+
+  function markDirty() {
+    if (!dirty) {
+      dirty = true;
+      setStatus('Unsaved changes', 'dirty');
+    }
+  }
+
+  /* ---------- social rows ---------- */
+  function socialRow(type, url) {
+    var row = document.createElement('div');
+    row.className = 'social-row';
+
+    var select = document.createElement('select');
+    SOCIAL_TYPES.forEach(function (t) {
+      var o = document.createElement('option');
+      o.value = t;
+      o.textContent = t === 'x' ? 'X (Twitter)' : t;
+      select.appendChild(o);
+    });
+    select.value = SOCIAL_TYPES.indexOf(type) > -1 ? type : 'website';
+
+    var input = document.createElement('input');
+    input.type = 'url';
+    input.placeholder = 'https://…';
+    input.value = url || '';
+
+    var remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'icon-btn';
+    remove.title = 'Remove this link';
+    remove.setAttribute('aria-label', 'Remove this link');
+    remove.textContent = '×';
+    remove.addEventListener('click', function () {
+      row.remove();
+      markDirty();
+    });
+
+    row.appendChild(select);
+    row.appendChild(input);
+    row.appendChild(remove);
+    $('socials').appendChild(row);
+  }
+
+  /* ---------- form <-> card ---------- */
+  function fill(card) {
+    FIELDS.forEach(function (key) { $(key).value = card[key] || ''; });
+    $('socials').innerHTML = '';
+    (card.socials || []).forEach(function (s) { socialRow(s.type, s.url); });
+    if (!card.socials || !card.socials.length) socialRow('linkedin', '');
+    updateCount();
+  }
+
+  function collect() {
+    var card = {};
+    FIELDS.forEach(function (key) { card[key] = ($(key).value || '').trim(); });
+    card.socials = [];
+    Array.prototype.forEach.call($('socials').children, function (row) {
+      var url = row.querySelector('input').value.trim();
+      if (!url) return;
+      card.socials.push({ type: row.querySelector('select').value, url: url });
+    });
+    return card;
+  }
+
+  function updateCount() {
+    $('count').textContent = ($('summary').value || '').length;
+  }
+
+  /* ---------- QR ---------- */
+  var qrTimer;
+  var qrState = { url: '', valid: false };
+
+  function syncQrButtons() {
+    var ready = online && qrState.valid;
+    [$('qrPng'), $('qrSvg')].forEach(function (el) {
+      el.setAttribute('aria-disabled', ready ? 'false' : 'true');
+      el.style.opacity = ready ? '' : '.55';
+      el.style.cursor = ready ? '' : 'not-allowed';
+      el.title = ready
+        ? 'Download the QR code'
+        : !qrState.url
+          ? 'Add your card link first'
+          : !qrState.valid
+            ? 'The card link must start with http:// or https://'
+            : 'The editor server is offline — run npm start';
+    });
+  }
+
+  function refreshQr() {
+    var url = $('siteUrl').value.trim();
+    var img = $('qrImg');
+    var png = $('qrPng');
+    var svg = $('qrSvg');
+    var note = $('qrNote');
+
+    qrState.url = url;
+    qrState.valid = /^https?:\/\/\S+$/i.test(url);
+
+    if (!url) {
+      img.removeAttribute('src');
+      img.dataset.empty = '1';
+      png.href = svg.href = '#';
+      note.className = 'note';
+      note.textContent = 'Publish the dist folder to Netlify, then paste that link here.';
+      syncQrButtons();
+      return;
+    }
+
+    if (!qrState.valid) {
+      note.className = 'note warn';
+      note.textContent = 'That does not look like a full link — it should start with https://';
+      syncQrButtons();
+      return;
+    }
+
+    var direct = '/api/qr.png?url=' + encodeURIComponent(url);
+    img.src = direct + '&t=' + Date.now();
+    img.dataset.empty = '0';
+    png.href = direct;
+    svg.href = '/api/qr.svg?url=' + encodeURIComponent(url);
+
+    if (/your-card\.netlify\.app/.test(url)) {
+      note.className = 'note warn';
+      note.textContent = 'This is still the placeholder link. Replace it with your live Netlify address, then save.';
+    } else {
+      note.className = 'note';
+      note.textContent = 'Scanning opens your card. The PNG is 1024px, the SVG stays sharp at any size.';
+    }
+
+    syncQrButtons();
+  }
+
+  function scheduleQr() {
+    clearTimeout(qrTimer);
+    qrTimer = setTimeout(refreshQr, 450);
+  }
+
+  async function downloadQr(ext, event) {
+    event.preventDefault();
+
+    if (!qrState.valid) {
+      toast(!qrState.url
+        ? 'Add your card link first — the QR needs an address to point at.'
+        : 'The card link must start with http:// or https://', true);
+      return;
+    }
+    if (!online) {
+      showBanner();
+      toast('The editor server is offline. Run npm start in this folder, then try again.', true);
+      return;
+    }
+
+    try {
+      var res = await fetch('/api/qr.' + ext + '?url=' + encodeURIComponent(qrState.url), { cache: 'no-store' });
+      var type = res.headers.get('content-type') || '';
+      if (!res.ok || type.indexOf('image/') !== 0) {
+        throw new Error('Could not build the QR code — the editor server did not answer.');
+      }
+      var blob = await res.blob();
+      var href = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = href;
+      a.download = 'card-qr.' + ext;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(href); }, 5000);
+      toast('QR code downloaded as card-qr.' + ext);
+    } catch (err) {
+      setOnline(false, err.message + ' Run npm start again — this page reconnects by itself.');
+      toast(err.message, true);
+    }
+  }
+
+  /* ---------- talking to the local server ---------- */
+  function apiError(message, transient) {
+    var err = new Error(message);
+    err.transient = !!transient; // worth retrying / means the server is down
+    return err;
+  }
+
+  async function attempt(path, options) {
+    var res;
+    try {
+      res = await fetch(path, Object.assign({ cache: 'no-store' }, options || {}));
+    } catch (err) {
+      throw apiError('The editor server is not reachable.', true);
+    }
+
+    var type = res.headers.get('content-type') || '';
+    if (type.indexOf('application/json') === -1) {
+      var gateway = res.status === 502 || res.status === 503 || res.status === 504 || res.status === 0;
+      throw apiError(
+        res.status === 404 || res.status === 405
+          ? 'This page is not being served by the editor server.'
+          : gateway
+            ? 'The editor server is not responding.'
+            : 'The editor server sent an unexpected reply (HTTP ' + res.status + ').',
+        true
+      );
+    }
+
+    var data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      throw apiError('The editor server sent an empty reply.', true);
+    }
+
+    if (!res.ok) throw apiError(data.error || 'Request failed (HTTP ' + res.status + ')', false);
+    return data;
+  }
+
+  /* A stale keep-alive socket makes the first attempt fail with an empty
+     reply even though the server is fine — so retry once, fresh. */
+  async function api(path, options) {
+    try {
+      return await attempt(path, options);
+    } catch (err) {
+      if (!err.transient) throw err;
+      await new Promise(function (resolve) { setTimeout(resolve, 250); });
+      return attempt(path, options);
+    }
+  }
+
+  /* ---------- connection state ---------- */
+  var online = false;
+  var loadedOnce = false;
+
+  function showBanner(text) {
+    if (text) $('bannerText').textContent = text;
+    $('bannerHint').textContent = 'This page: ' + location.origin + ' · API: ' + location.origin + '/api/health';
+    $('banner').style.display = 'block';
+  }
+
+  function setOnline(isOnline, reason) {
+    if (isOnline === online) return;
+    online = isOnline;
+
+    if (isOnline) {
+      $('banner').style.display = 'none';
+      $('saveBtn').disabled = false;
+      if (!loadedOnce) {
+        load();
+      } else {
+        setStatus(dirty ? 'Unsaved changes' : 'All changes saved', dirty ? 'dirty' : 'saved');
+      }
+    } else {
+      showBanner(reason);
+      $('saveBtn').disabled = true;
+      setStatus('Server offline', 'dirty');
+    }
+    syncQrButtons();
+  }
+
+  async function checkServer() {
+    try {
+      await api('/api/health');
+      setOnline(true);
+    } catch (err) {
+      setOnline(false, err.message + ' Start it with npm start — this page reconnects by itself.');
+    }
+  }
+
+  /* ---------- load / save ---------- */
+  async function load() {
+    try {
+      var data = await api('/api/card');
+      fill(data.card);
+      $('siteUrl').value = data.siteUrl || '';
+      savedSite = data.siteUrl || '';
+      loadedOnce = true;
+      dirty = false;
+      setStatus('All changes saved', 'saved');
+      setOnline(true);
+      refreshQr();
+      reloadPreview();
+    } catch (err) {
+      setOnline(false, err.message + ' Start it with npm start — this page reconnects by itself.');
+      refreshQr();
+    }
+  }
+
+  function reloadPreview() {
+    $('preview').src = '/index.html?t=' + Date.now();
+  }
+
+  async function save() {
+    if (!online) {
+      showBanner();
+      toast('The editor server is offline. Run npm start in this folder, then try again.', true);
+      return;
+    }
+
+    var btn = $('saveBtn');
+    btn.disabled = true;
+    setStatus('Saving…');
+
+    try {
+      var data = await api('/api/card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ card: collect(), siteUrl: $('siteUrl').value.trim() }),
+      });
+
+      dirty = false;
+      savedSite = data.siteUrl || '';
+      setStatus('All changes saved', 'saved');
+      reloadPreview();
+      refreshQr();
+      toast(data.siteUrl
+        ? 'Saved. card.vcf, QR code and dist/ rebuilt.'
+        : 'Saved. Add your card link to generate a QR code.');
+    } catch (err) {
+      if (err.transient) {
+        setOnline(false, err.message + ' Your edits are still in the form — run npm start and save again.');
+      } else {
+        setStatus(dirty ? 'Unsaved changes' : 'All changes saved', dirty ? 'dirty' : 'saved');
+      }
+      toast(err.message, true);
+    } finally {
+      btn.disabled = !online;
+    }
+  }
+
+  /* ---------- wire up ---------- */
+  FIELDS.forEach(function (key) {
+    $(key).addEventListener('input', markDirty);
+  });
+  $('summary').addEventListener('input', updateCount);
+
+  $('socials').addEventListener('input', markDirty);
+  $('socials').addEventListener('change', markDirty);
+
+  $('addSocial').addEventListener('click', function () {
+    socialRow('instagram', '');
+    markDirty();
+  });
+
+  $('siteUrl').addEventListener('input', function () {
+    markDirty();
+    scheduleQr();
+  });
+
+  $('saveBtn').addEventListener('click', save);
+
+  $('qrPng').addEventListener('click', function (e) { downloadQr('png', e); });
+  $('qrSvg').addEventListener('click', function (e) { downloadQr('svg', e); });
+  $('retryBtn').addEventListener('click', function () { checkServer(); });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      save();
+    }
+  });
+
+  window.addEventListener('beforeunload', function (e) {
+    if (dirty) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  checkServer();
+  setInterval(checkServer, 5000);
+})();
+</script>
+</body>
+</html>

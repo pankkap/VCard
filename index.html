@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pankaj Kapoor — Digital Business Card</title>
+<meta name="description" content="Founder at Beta Labs. Save my contact details straight to your phone.">
+<meta name="theme-color" content="#0b1b1f">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Pankaj Kapoor — Digital Business Card">
+<meta property="og:description" content="Founder at Beta Labs. Save my contact details straight to your phone.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230d9c9c'/%3E%3Ctext x='50' y='68' font-family='Helvetica,Arial' font-size='48' font-weight='bold' fill='white' text-anchor='middle'%3EAM%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #0b1b1f;
+    --ink-soft: #3d5358;
+    --muted: #6b8288;
+    --teal: #0d9c9c;
+    --teal-dark: #07787a;
+    --line: #e8eff0;
+    --chip: #f3f8f8;
+    --radius: 28px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 32px 18px calc(32px + env(safe-area-inset-bottom));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(900px 520px at 12% -8%, #d8f0ef 0%, rgba(216,240,239,0) 62%),
+      radial-gradient(760px 460px at 92% 4%, #e6eefc 0%, rgba(230,238,252,0) 58%),
+      radial-gradient(700px 700px at 50% 108%, #dff3ea 0%, rgba(223,243,234,0) 60%),
+      #f6fafa;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ---------- card ---------- */
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow:
+      0 1px 2px rgba(11, 27, 31, .05),
+      0 24px 60px -24px rgba(8, 60, 60, .38);
+    overflow: hidden;
+    animation: rise .55s cubic-bezier(.2, .7, .3, 1) both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px) scale(.985); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+  }
+
+  .cover {
+    position: relative;
+    height: 132px;
+    background:
+      radial-gradient(120px 120px at 84% 22%, rgba(13, 156, 156, .55), rgba(13, 156, 156, 0) 70%),
+      radial-gradient(180px 140px at 12% 90%, rgba(84, 120, 220, .38), rgba(84, 120, 220, 0) 72%),
+      linear-gradient(135deg, #0d3b3c 0%, #0b1b1f 58%, #102126 100%);
+    overflow: hidden;
+  }
+
+  .cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, .5) 1px, transparent 1px);
+    background-size: 18px 18px;
+    opacity: .16;
+  }
+
+  .avatar {
+    position: relative;
+    z-index: 2;
+    width: 108px;
+    height: 108px;
+    margin: -54px auto 0;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    background: linear-gradient(140deg, var(--teal) 0%, #2a6f9b 100%);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    box-shadow: 0 8px 22px -8px rgba(8, 60, 60, .5);
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: #fff;
+    user-select: none;
+  }
+
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ---------- identity ---------- */
+  .identity { padding: 14px 24px 0; text-align: center; }
+
+  .name {
+    margin: 0;
+    font-size: 23px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -.35px;
+  }
+
+  .role {
+    margin: 5px 0 0;
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .company {
+    margin: 3px 0 0;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+
+  .summary {
+    margin: 14px 24px 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  /* ---------- save button ---------- */
+  .save-wrap { padding: 18px 24px 0; }
+
+  .btn-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 54px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #12b0ac 0%, var(--teal-dark) 100%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 650;
+    font-family: inherit;
+    letter-spacing: .1px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -10px rgba(7, 120, 122, .85);
+    transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-save:hover { filter: brightness(1.05); }
+  .btn-save:active { transform: scale(.985); box-shadow: 0 6px 14px -8px rgba(7, 120, 122, .9); }
+  .btn-save:focus-visible { outline: 3px solid #9fe3e1; outline-offset: 3px; }
+
+  .btn-save svg { flex: 0 0 auto; }
+
+  .hint {
+    margin: 9px 0 0;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    letter-spacing: .15px;
+  }
+
+  /* ---------- detail rows ---------- */
+  .rows { list-style: none; margin: 18px 0 0; padding: 0 12px; }
+
+  .row a,
+  .row .static {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: background .15s ease;
+  }
+
+  .row a:hover { background: var(--chip); }
+  .row a:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; background: var(--chip); }
+
+  .row + .row { border-top: 1px solid #f1f6f6; }
+
+  .row-icon {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: var(--chip);
+    color: var(--teal-dark);
+    display: grid;
+    place-items: center;
+  }
+
+  .row-text { min-width: 0; flex: 1 1 auto; }
+
+  .row-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .row-value {
+    display: block;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- socials ---------- */
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 16px 24px 22px;
+    border-top: 1px solid var(--line);
+  }
+
+  .socials a {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--chip);
+    color: var(--ink-soft);
+    display: grid;
+    place-items: center;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .socials a:hover { background: #e2f2f2; color: var(--teal-dark); transform: translateY(-2px); }
+  .socials a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+  /* ---------- page footer ---------- */
+  .page-foot {
+    font-size: 11.5px;
+    color: #8ba3a8;
+    text-align: center;
+    letter-spacing: .2px;
+  }
+
+  .page-foot a { color: #6b8288; }
+
+  /* ---------- toast ---------- */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 20px);
+    max-width: min(360px, calc(100vw - 36px));
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: #0b1b1f;
+    color: #eaf6f5;
+    font-size: 12.5px;
+    line-height: 1.45;
+    text-align: center;
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, .5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+    z-index: 20;
+  }
+
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 380px) {
+    .name { font-size: 21px; }
+    .rows { padding: 0 6px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= EDIT YOUR DETAILS HERE ================= -->
+<script id="card-config" type="application/json">
+{
+  "firstName": "Pankaj",
+  "lastName": "Kapoor",
+  "jobTitle": "Founder",
+  "company": "Beta Labs",
+  "phone": "+91 9729280731",
+  "email": "info@beta-labs.in",
+  "website": "www.beta-labs.in",
+  "street": "",
+  "city": "",
+  "state": "",
+  "zip": "",
+  "country": "",
+  "summary": "Beta-Labs is an AI-driven technology and innovation company focused on building intelligent software solutions, automation platforms, and digital products.",
+  "photo": "",
+  "socials": [
+    {
+      "type": "linkedin",
+      "url": "https://www.linkedin.com/company/beta-labs-in/"
+    },
+    {
+      "type": "x",
+      "url": "https://x.com/example"
+    },
+    {
+      "type": "instagram",
+      "url": "https://instagram.com/example"
+    }
+  ]
+}
+</script>
+<!-- ========================================================= -->
+
+<main class="card" role="main">
+  <div class="cover" aria-hidden="true"></div>
+  <div class="avatar" id="avatar"><span id="initials">AM</span></div>
+
+  <div class="identity">
+    <h1 class="name" id="name">Alex Morgan</h1>
+    <p class="role" id="role">Founder &amp; Product Designer</p>
+    <p class="company" id="company">Northwind Studio</p>
+  </div>
+
+  <p class="summary" id="summary"></p>
+
+  <div class="save-wrap">
+    <a class="btn-save" id="saveBtn" href="card.vcf" type="text/vcard" rel="noopener">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M19 8v6M22 11h-6"/>
+      </svg>
+      <span>Save to Contacts</span>
+    </a>
+    <p class="hint" id="saveHint">vCard · works with iPhone &amp; Android</p>
+  </div>
+
+  <ul class="rows" id="rows"></ul>
+  <div class="socials" id="socials"></div>
+</main>
+
+<footer class="page-foot" id="pageFoot">Digital business card</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="vcard.js"></script>
+<script>
+(function () {
+  /* ---------------- config ---------------- */
+  var card;
+  try {
+    card = JSON.parse(document.getElementById('card-config').textContent);
+  } catch (err) {
+    console.error('card-config is not valid JSON', err);
+    card = {};
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fullName = [card.firstName, card.lastName].filter(Boolean).join(' ') || 'My card';
+
+  /* ---------------- icons ---------------- */
+  var S = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  var strokeIcons = {
+    phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+    mail: '<rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="m3 6.5 8.1 5.6a1.6 1.6 0 0 0 1.8 0L21 6.5"/>',
+    globe: '<circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4"/><path d="M12 2.8c2.3 2.5 3.5 5.7 3.5 9.2s-1.2 6.7-3.5 9.2c-2.3-2.5-3.5-5.7-3.5-9.2S9.7 5.3 12 2.8z"/>',
+    pin: '<path d="M20 10.4c0 5.6-8 11.6-8 11.6s-8-6-8-11.6a8 8 0 0 1 16 0z"/><circle cx="12" cy="10.2" r="2.9"/>',
+    building: '<rect x="4" y="3" width="16" height="18" rx="2.2"/><path d="M9 7h1.5M13.5 7H15M9 11h1.5M13.5 11H15M9 15h1.5M13.5 15H15M10 21v-3h4v3"/>'
+  };
+
+  var solidIcons = {
+    linkedin: '<path d="M4.98 3.5A2.49 2.49 0 1 1 0 3.5a2.49 2.49 0 0 1 4.98 0zM.22 8.02h4.56V22H.22zM8.34 8.02h4.37v1.9h.06c.61-1.15 2.1-2.36 4.32-2.36 4.62 0 5.47 3.04 5.47 7V22h-4.56v-6.6c0-1.79-.03-4.09-2.49-4.09-2.49 0-2.87 1.94-2.87 3.95V22H8.34z"/>',
+    x: '<path d="M18.24 2.25h3.31l-7.23 8.26L22.83 21.75H16.17l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z"/>',
+    instagram: '<path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 3.1a6.7 6.7 0 1 0 0 13.4 6.7 6.7 0 0 0 0-13.4zm0 11.05a4.35 4.35 0 1 1 0-8.7 4.35 4.35 0 0 1 0 8.7zm6.96-11.31a1.57 1.57 0 1 1-3.13 0 1.57 1.57 0 0 1 3.13 0z"/>',
+    facebook: '<path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/>',
+    youtube: '<path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6z"/>',
+    github: '<path d="M12 .5C5.7.5.5 5.7.5 12.1c0 5.1 3.3 9.4 7.9 11 .6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.6 7.9-5.9 7.9-11C23.5 5.7 18.3.5 12 .5z"/>',
+    telegram: '<path d="M12 1.9a10.1 10.1 0 1 0 0 20.2 10.1 10.1 0 0 0 0-20.2zm4.7 6.9-1.6 7.4c-.1.5-.4.7-.9.4l-2.4-1.8-1.2 1.1c-.1.2-.2.3-.5.3l.2-2.5 4.4-4c.2-.2 0-.3-.3-.1l-5.5 3.5-2.4-.8c-.5-.2-.5-.5.1-.8l9.3-3.6c.4-.1.8.1.8.9z"/>',
+    tiktok: '<path d="M16.6 5.8a4.3 4.3 0 0 1-1.1-2.8h-3.1v12.4a2.6 2.6 0 1 1-1.8-2.5V9.8a5.7 5.7 0 1 0 4.9 5.6V8.9a7.4 7.4 0 0 0 4.3 1.4V7.2a4.3 4.3 0 0 1-3.2-1.4z"/>',
+    website: '<circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4"/><path d="M12 2.8c2.3 2.5 3.5 5.7 3.5 9.2s-1.2 6.7-3.5 9.2c-2.3-2.5-3.5-5.7-3.5-9.2S9.7 5.3 12 2.8z"/>'
+  };
+
+  function solid(name, size) {
+    var path = solidIcons[name] || solidIcons.website;
+    var isStroke = name === 'website';
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" aria-hidden="true" ' +
+      (isStroke ? S + ' fill="none"' : 'fill="currentColor"') + '>' + path + '</svg>';
+  }
+
+  function stroke(name, size) {
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" ' + S +
+      ' aria-hidden="true">' + (strokeIcons[name] || strokeIcons.globe) + '</svg>';
+  }
+
+  /* ---------------- identity ---------------- */
+  var initials = ((card.firstName || ' ')[0] + (card.lastName || ' ')[0]).trim().toUpperCase() || '·';
+  $('initials').textContent = initials;
+  $('name').textContent = fullName;
+  document.title = fullName + (card.company ? ' — Digital Business Card' : '');
+
+  if (card.jobTitle) {
+    $('role').textContent = card.jobTitle;
+  } else {
+    $('role').remove();
+  }
+  if (card.company) {
+    $('company').textContent = card.company;
+  } else {
+    $('company').remove();
+  }
+
+  // keep the tab icon matching the initials
+  var favicon = document.querySelector('link[rel="icon"]');
+  if (favicon) {
+    favicon.href = 'data:image/svg+xml,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+        '<rect width="100" height="100" rx="24" fill="#0d9c9c"/>' +
+        '<text x="50" y="69" font-family="Helvetica,Arial" font-size="' +
+        (initials.length > 2 ? 34 : 46) + '" font-weight="bold" fill="white" text-anchor="middle">' +
+        initials + '</text></svg>'
+    );
+  }
+
+  var avatar = $('avatar');
+  if (card.photo) {
+    var img = document.createElement('img');
+    img.src = card.photo;
+    img.alt = fullName;
+    img.onerror = function () { img.remove(); };
+    avatar.innerHTML = '';
+    avatar.appendChild(img);
+  } else {
+    avatar.textContent = initials;
+    avatar.style.fontSize = initials.length > 2 ? '28px' : '34px';
+  }
+
+  if (card.summary) {
+    $('summary').textContent = card.summary;
+  } else {
+    $('summary').remove();
+  }
+
+  /* ---------------- detail rows ---------------- */
+  var addressParts = [card.street, card.city, [card.state, card.zip].filter(Boolean).join(' '), card.country]
+    .filter(Boolean);
+  var rows = [];
+
+  if (card.phone) {
+    rows.push({
+      icon: 'phone', label: 'Phone', value: card.phone,
+      href: 'tel:' + card.phone.replace(/[^\d+*#]/g, '')
+    });
+  }
+  if (card.email) {
+    rows.push({
+      icon: 'mail', label: 'Email', value: card.email,
+      href: 'mailto:' + card.email
+    });
+  }
+  if (card.website) {
+    var display = card.website.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+    rows.push({ icon: 'globe', label: 'Website', value: display, href: card.website, external: true });
+  }
+  if (addressParts.length) {
+    rows.push({
+      icon: 'pin', label: 'Address', value: addressParts.join(', '),
+      href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addressParts.join(', ')),
+      external: true
+    });
+  }
+  if (card.company && !rows.some(function (r) { return r.icon === 'building'; })) {
+    rows.push({ icon: 'building', label: 'Company', value: card.company });
+  }
+
+  $('rows').innerHTML = rows.map(function (r) {
+    var inner =
+      '<span class="row-icon">' + stroke(r.icon, 18) + '</span>' +
+      '<span class="row-text">' +
+        '<span class="row-label">' + r.label + '</span>' +
+        '<span class="row-value"></span>' +
+      '</span>';
+    var tag = r.href
+      ? '<a href="' + r.href + '"' + (r.external ? ' target="_blank" rel="noopener"' : '') + '>' + inner + '</a>'
+      : '<div class="static">' + inner + '</div>';
+    return '<li class="row">' + tag + '</li>';
+  }).join('');
+
+  // Text is set separately so user-entered values are never parsed as HTML.
+  Array.prototype.forEach.call(document.querySelectorAll('#rows .row-value'), function (el, i) {
+    el.textContent = rows[i].value;
+  });
+
+  /* ---------------- socials ---------------- */
+  if (card.socials && card.socials.length) {
+    $('socials').innerHTML = card.socials.map(function (s) {
+      if (!s || !s.url) return '';
+      return '<a href="' + String(s.url).replace(/"/g, '%22') + '" target="_blank" rel="noopener" ' +
+        'aria-label="' + (s.type || 'social') + '">' + solid(s.type, 19) + '</a>';
+    }).join('');
+  } else {
+    $('socials').remove();
+  }
+
+  /* ---------------- save to contacts ---------------- */
+  var saveBtn = $('saveBtn');
+  var fileBase = vCardFileName(card);
+  $('pageFoot').textContent = fullName + ' · ' + (card.company || 'Digital business card');
+
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    // Safari handles a link to text/vcard natively: it opens the contact
+    // preview with "Add All Contacts". A download attribute would instead
+    // push the file into the Files app, so leave it off.
+    saveBtn.removeAttribute('download');
+    $('saveHint').textContent = 'Opens your Contacts app · iPhone & iPad';
+  } else {
+    saveBtn.setAttribute('download', fileBase + '.vcf');
+    $('saveHint').textContent = 'vCard · works with iPhone & Android';
+  }
+
+  var toast = $('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 4200);
+  }
+
+  saveBtn.addEventListener('click', function (e) {
+    if (isIOS) return; // let Safari open the native contact sheet
+    if (!window.buildVCard) return; // fall back to the plain card.vcf link
+    e.preventDefault();
+
+    var vcf = window.buildVCard(card);
+    var blob = new Blob([vcf], { type: 'text/vcard;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fileBase + '.vcf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    showToast('Contact file downloaded. Open it to add ' + (card.firstName || 'me') + ' to your contacts.');
+  });
+})();
+</script>
+</body>
+</html>
